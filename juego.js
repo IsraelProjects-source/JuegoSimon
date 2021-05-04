@@ -3,7 +3,8 @@ const violeta = document.getElementById('violeta')
 const naranja = document.getElementById('naranja')
 const verde = document.getElementById('verde')
 const btnEmpezar = document.getElementById('btnEmpezar')
-const ULTIMO_NIVEL = 5
+const points = document.getElementById('points')
+const ULTIMO_NIVEL = 10
 
 
 class Juego {
@@ -18,6 +19,10 @@ class Juego {
   inicializar() {
 
     this.maxScore = localStorage.getItem('puntos')
+    debugger
+    if (this.maxScore != null) {
+      points.innerHTML = this.maxScore
+    }
 
     this.siguienteNivel = this.siguienteNivel.bind(this)
     /// de esta forma siempre el metodo eleguir color estara atado la clase Juego
@@ -25,7 +30,8 @@ class Juego {
     //toggle se icnifica como si fuera una switch de encender o apagar
     this.cambiarNivel = this.cambiarNivel.bind(this)
     this.toggleBtnEmpezar()
-    this.nivel = 1  
+    this.nivel = 1 
+    this.points = 1
     this.colors = {
       // celeste: celeste,
       // violeta: violeta,
@@ -54,11 +60,11 @@ class Juego {
   siguienteNivel () {
     if (this.nivel === 1) this.cambiarNivel()
 
-    // else swal(`Nivel ${this.nivel - 1} superado`, `Siguiente nivel: ${this.nivel}, puntos: ${this.puntos}`, 'success')
-    //     .then(this.cambiarNivel)
-    // }
-    else swal(`Nivel ${this.nivel - 1} superado`, `Siguiente nivel: ${this.nivel}`, 'success')
+    else swal(`Nivel ${this.nivel - 1} superado`, `Siguiente nivel: ${this.nivel}, puntos: ${this.points}`, 'success')
         .then(this.cambiarNivel)
+    // }
+    // else swal(`Nivel ${this.nivel - 1} superado`, `Siguiente nivel: ${this.nivel}`, 'success')
+    //     .then(this.cambiarNivel)
     }
     
   cambiarNivel () {
@@ -110,7 +116,7 @@ class Juego {
 
   iluminarColor (color) {
     this.colors[color].classList.add('light')  
-    console.log(color)  
+    // console.log(color)  
     setTimeout(() => this.apagarColor(color), 500)
   }
 
@@ -163,15 +169,17 @@ class Juego {
 
 
 
-  elegirColor(ev) {
-const nombreColor = ev.target.dataset.color
-const numeroColor = this.transformarColorANumero(nombreColor)
-this.iluminarColor(nombreColor)
-if (numeroColor === this.secuencia[this.subnivel]) {
-    this.subnivel++
-        this.puntos++
+    elegirColor(ev) {
+    const nombreColor = ev.target.dataset.color
+    const numeroColor = this.transformarColorANumero(nombreColor)
+    this.iluminarColor(nombreColor)
+    if (numeroColor === this.secuencia[this.subnivel]) {
+        this.subnivel++
         if (this.subnivel === this.nivel) {
-            this.nivel++
+          this.nivel++
+          this.points++
+          console.log(this.points)
+          console.log(this.maxScore)
                 this.eliminarEventosClick()
             if (this.nivel === (ULTIMO_NIVEL + 1)) {
                 this.ganoElJuego()
@@ -179,70 +187,66 @@ if (numeroColor === this.secuencia[this.subnivel]) {
                 setTimeout(() => this.siguienteNivel(), 500);
             }
         }
-} else {
-    this.perdioElJuego()
-}
-}
-
-ganoElJuego() {
-    swal('Simon Dice', 'Ganaste !!', 'success')
-        .then(this.inicializar)
-}
-
-perdioElJuego() {
-    if (this.puntos > this.maxScore) {
-        localStorage.setItem('puntos', this.puntos)
-        swal('Simon Dice', `Mejoraste tu puntuacion :)  ${this.puntos} `, 'success')
-            .then(() => {
-                this.eliminarEventosClick()
-                this.inicializar()
-            })
-    }else
-    {
-        swal('Simon Dice', `Lo lamentamos perdiste :(, puntos obtenidos:  ${this.puntos} `, 'error')
-            .then(() => {
-                this.eliminarEventosClick()
-                this.inicializar()
-            })
+    } else {
+        this.perdioElJuego()
     }
-  
+    }
+
+    ganoElJuego() {
+        swal('Simon Dice', 'Ganaste !!', 'success')
+            .then(this.inicializar)
+    }
+
+    perdioElJuego() {
+        if (this.points > this.maxScore) {
+            localStorage.setItem('puntos', this.points)
+            swal('Simon Dice', `Mejoraste tu puntuacion :)  ${this.points} `, 'success')
+                .then(() => {
+                    this.eliminarEventosClick()
+                    this.inicializar()
+                })
+        }else
+        {
+            swal('Simon Dice', `Lo lamentamos perdiste :(, puntos obtenidos:  ${this.points} `, 'error')
+                .then(() => {
+                    this.eliminarEventosClick()
+                    this.inicializar()
+                })
+        }
+    
+    }
+
+
+
+    ganoJuego () {
+    //como el swal devuelve una promesa podemos hacer acciones despues del mensaje
+    swal('Game say', 'You win!', 'success')
+    .then(this.inicializar())
+    }
+
+    perdioJuego () {
+    //como el swal devuelve una promesa podemos hacer acciones despues del mensaje
+    swal('Game say', 'You lose :[', 'error')
+    .then(() => {
+        this.eliminarEventosClick()
+        this.inicializar()
+    })
+    }
+
+
 }
-
-
-
-
-
-ganoJuego () {
-  //como el swal devuelve una promesa podemos hacer acciones despues del mensaje
-  swal('Game say', 'You win!', 'success')
-  .then(this.inicializar())
-}
-
-perdioJuego () {
-  //como el swal devuelve una promesa podemos hacer acciones despues del mensaje
-  swal('Game say', 'You lose :[', 'error')
-  .then(() => {
-    this.eliminarEventosClick()
-    this.inicializar()
-  })
-}
-
-
-
-
-
-
-
-
-
-
-}
-
-
-
 
 
 
 function empezarJuego() {
 window.juego = new Juego()
+puntaje()
 }
+
+function puntaje() {
+  let maxScore = localStorage.getItem('points')
+  if (maxScore != null) {
+    points.innerHTML = maxScore
+  }
+}
+
